@@ -1,0 +1,8 @@
+FROM jlesage/firefox@sha256:3804ffd4a38837340c5103a43825ebaca979eb50fed44c2ff5310676b13ea32d
+
+RUN mv /opt/noVNC/app/ui.js /opt/noVNC/app/ui-upstream.js
+COPY ui-wrapper.js mobile-panel.js mobile-panel.css /opt/noVNC/app/
+
+LABEL org.opencontainers.image.title="private-login-desktop-mobile" \
+      org.opencontainers.image.source="https://github.com/jakubrojewski/private-login-desktop" \
+      org.opencontainers.image.base.name="jlesage/firefox@sha256:3804ffd4a38837340c5103a43825ebaca979eb50fed44c2ff5310676b13ea32d"

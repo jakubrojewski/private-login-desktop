@@ -1,0 +1,39 @@
+name: Publish image
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Check
+        run: node tests/mobile-panel.test.mjs
+
+      - name: Build and publish linux/amd64
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          image="ghcr.io/${GITHUB_REPOSITORY,,}"
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+          docker buildx build \
+            --platform linux/amd64 \
+            --provenance=true \
+            --sbom=true \
+            --label "org.opencontainers.image.revision=$GITHUB_SHA" \
+            --tag "$image:sha-$GITHUB_SHA" \
+            --push \
+            --metadata-file /tmp/image-metadata.json \
+            -f Dockerfile.mobile .
+          digest="$(python3 -c 'import json; print(json.load(open("/tmp/image-metadata.json"))["containerimage.digest"])')"
+          docker buildx imagetools inspect "$image@$digest"
+          echo "Published $image@$digest"
