@@ -88,6 +88,7 @@ assert.match(source, /⛶ Dopasuj/);
 assert.match(css, /min-height:\s*48px/);
 assert.match(dockerfile, /FROM jlesage\/firefox@sha256:3804ffd4a38837340c5103a43825ebaca979eb50fed44c2ff5310676b13ea32d/);
 assert.match(dockerfile, /ui-upstream\.js/);
+assert.match(dockerfile, /COPY ui-wrapper\.js \/opt\/noVNC\/app\/ui\.js/);
 assert.match(wrapper, /UI\.start =/);
 assert.match(wrapper, /startMobilePanel\(UI, WebUtil\)/);
 console.log("mobile_panel_policy=PASS");
