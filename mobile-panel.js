@@ -63,6 +63,20 @@ export function makeIdleController({ timeoutMs, onIdle, setTimer = setTimeout, c
   return { activity: arm, stop: () => timer !== null && clearTimer(timer) };
 }
 
+export function applyViewportMode(UI, WebUtil, mode) {
+  if (!UI?.rfb || !['fit', 'pan'].includes(mode)) throw new Error('Nieprawidłowy tryb widoku');
+  const fit = mode === 'fit';
+  WebUtil.writeSetting('resize', fit ? 'scale' : 'off');
+  WebUtil.writeSetting('view_clip', !fit);
+  UI.updateSetting('resize');
+  UI.updateSetting('view_clip');
+  UI.applyResizeMode();
+  UI.updateViewClip();
+  UI.rfb.dragViewport = !fit;
+  UI.updateViewDrag();
+  UI.rfb.focus();
+}
+
 function addButton(toolbar, label, action) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -169,15 +183,15 @@ export function startMobilePanel(UI, WebUtil) {
   address.body.append(addressInput, addressHost, addressOpen);
   addButton(toolbar, '🌐 Adres', () => address.dialog.showModal());
 
-  addButton(toolbar, '⛶ Dopasuj', () => {
+  let fitted = UI.getSetting('resize') === 'scale';
+  const view = addButton(toolbar, fitted ? '🔎 100% + pan' : '⛶ Dopasuj', () => {
     if (!UI.rfb) return;
-    const resize = document.getElementById('noVNC_setting_resize');
-    resize.value = 'scale';
-    resize.dispatchEvent(new Event('change', { bubbles: true }));
-    UI.rfb.scaleViewport = true;
-    UI.rfb.resizeSession = false;
-    UI.rfb.focus();
+    fitted = !fitted;
+    applyViewportMode(UI, WebUtil, fitted ? 'fit' : 'pan');
+    view.textContent = fitted ? '🔎 100% + pan' : '⛶ Dopasuj';
+    view.setAttribute('aria-pressed', String(!fitted));
   });
+  view.setAttribute('aria-pressed', String(!fitted));
 
   const idleNotice = createDialog('Sesja rozłączona');
   const idleText = document.createElement('p');

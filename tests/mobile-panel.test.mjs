@@ -6,6 +6,7 @@ import {
   pasteToRemote,
   openAddress,
   makeIdleController,
+  applyViewportMode,
 } from "../mobile-panel.js";
 
 const calls = [];
@@ -59,6 +60,33 @@ assert.equal(timers[0][1], 250);
 timers.shift()[0]();
 assert.deepEqual(calls.at(-1), ["clipboard", ""]);
 
+const viewportSettings = {};
+const viewportRfb = { focus() {} };
+const viewportUI = {
+  rfb: viewportRfb,
+  updateSetting() {},
+  applyResizeMode() {
+    viewportRfb.scaleViewport = viewportSettings.resize === "scale";
+    viewportRfb.resizeSession = false;
+  },
+  updateViewClip() { viewportRfb.clipViewport = viewportSettings.view_clip; },
+  updateViewDrag() {},
+};
+const viewportWebUtil = {
+  writeSetting(name, value) { viewportSettings[name] = value; },
+};
+applyViewportMode(viewportUI, viewportWebUtil, "pan");
+assert.deepEqual(viewportSettings, { resize: "off", view_clip: true });
+assert.equal(viewportRfb.scaleViewport, false);
+assert.equal(viewportRfb.clipViewport, true);
+assert.equal(viewportRfb.dragViewport, true);
+applyViewportMode(viewportUI, viewportWebUtil, "fit");
+assert.deepEqual(viewportSettings, { resize: "scale", view_clip: false });
+assert.equal(viewportRfb.scaleViewport, true);
+assert.equal(viewportRfb.clipViewport, false);
+assert.equal(viewportRfb.dragViewport, false);
+assert.throws(() => applyViewportMode(viewportUI, viewportWebUtil, "invalid"));
+
 let idle = null;
 let cleared = 0;
 const idleController = makeIdleController({
@@ -85,6 +113,7 @@ assert.match(source, /⌨ Klawiatura/);
 assert.match(source, /📋 Wklej/);
 assert.match(source, /🌐 Adres/);
 assert.match(source, /⛶ Dopasuj/);
+assert.match(source, /🔎 100% \+ pan/);
 assert.match(css, /min-height:\s*48px/);
 assert.match(dockerfile, /FROM jlesage\/firefox@sha256:3804ffd4a38837340c5103a43825ebaca979eb50fed44c2ff5310676b13ea32d/);
 assert.match(dockerfile, /ui-upstream\.js/);
