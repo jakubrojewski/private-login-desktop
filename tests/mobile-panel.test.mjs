@@ -115,6 +115,7 @@ assert.match(source, /🌐 Adres/);
 assert.match(source, /⛶ Dopasuj/);
 assert.match(source, /🔎 100% \+ pan/);
 assert.match(css, /min-height:\s*48px/);
+assert.match(css, /#noVNC_container\s*\{[^}]*position:\s*fixed[^}]*inset:\s*0[^}]*overflow:\s*hidden/s);
 assert.match(dockerfile, /FROM jlesage\/firefox@sha256:3804ffd4a38837340c5103a43825ebaca979eb50fed44c2ff5310676b13ea32d/);
 assert.match(dockerfile, /ui-upstream\.js/);
 assert.match(dockerfile, /COPY ui-wrapper\.js \/opt\/noVNC\/app\/ui\.js/);

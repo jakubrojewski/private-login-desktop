@@ -1,3 +1,9 @@
+#noVNC_container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
 #pld-toolbar {
   position: fixed;
   z-index: 10000;
