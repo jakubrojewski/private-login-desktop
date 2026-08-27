@@ -77,6 +77,11 @@ export function applyViewportMode(UI, WebUtil, mode) {
   UI.rfb.focus();
 }
 
+export function bindDisconnectNotice(rfb, onDisconnect) {
+  if (!rfb || typeof rfb.addEventListener !== 'function') throw new Error('Brak aktywnego połączenia');
+  rfb.addEventListener('disconnect', onDisconnect);
+}
+
 function addButton(toolbar, label, action) {
   const button = document.createElement('button');
   button.type = 'button';
@@ -201,6 +206,14 @@ export function startMobilePanel(UI, WebUtil) {
   reconnect.textContent = 'Połącz ponownie';
   reconnect.addEventListener('click', () => window.location.reload());
   idleNotice.body.append(idleText, reconnect);
+  const showReconnect = (text) => {
+    if (idleNotice.dialog.open) return;
+    idleText.textContent = text;
+    idleNotice.dialog.showModal();
+  };
+  bindDisconnectNotice(UI.rfb, () => {
+    showReconnect('Połączenie zostało przerwane. Połącz ponownie ręcznie.');
+  });
 
   WebUtil.writeSetting('reconnect', false);
   const idle = makeIdleController({
@@ -208,7 +221,7 @@ export function startMobilePanel(UI, WebUtil) {
     onIdle: () => {
       pasteInput.value = '';
       UI.rfb?.disconnect();
-      if (!idleNotice.dialog.open) idleNotice.dialog.showModal();
+      showReconnect('15 minut bezczynności. Serwer nadal działa.');
     },
   });
   for (const event of ['pointerdown', 'touchstart', 'keydown', 'input']) {

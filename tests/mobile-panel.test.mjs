@@ -7,6 +7,7 @@ import {
   openAddress,
   makeIdleController,
   applyViewportMode,
+  bindDisconnectNotice,
 } from "../mobile-panel.js";
 
 const calls = [];
@@ -87,6 +88,18 @@ assert.equal(viewportRfb.clipViewport, false);
 assert.equal(viewportRfb.dragViewport, false);
 assert.throws(() => applyViewportMode(viewportUI, viewportWebUtil, "invalid"));
 
+let disconnected = null;
+bindDisconnectNotice({
+  addEventListener(type, handler) {
+    assert.equal(type, "disconnect");
+    disconnected = handler;
+  },
+}, () => calls.push(["disconnect-notice"]));
+assert.equal(typeof disconnected, "function");
+disconnected();
+assert.deepEqual(calls.at(-1), ["disconnect-notice"]);
+assert.throws(() => bindDisconnectNotice(null, () => {}));
+
 let idle = null;
 let cleared = 0;
 const idleController = makeIdleController({
@@ -114,6 +127,7 @@ assert.match(source, /📋 Wklej/);
 assert.match(source, /🌐 Adres/);
 assert.match(source, /⛶ Dopasuj/);
 assert.match(source, /🔎 100% \+ pan/);
+assert.match(source, /bindDisconnectNotice\(UI\.rfb/);
 assert.match(css, /min-height:\s*48px/);
 assert.match(css, /#noVNC_container\s*\{[^}]*position:\s*fixed[^}]*inset:\s*0[^}]*overflow:\s*hidden/s);
 assert.match(dockerfile, /FROM jlesage\/firefox@sha256:3804ffd4a38837340c5103a43825ebaca979eb50fed44c2ff5310676b13ea32d/);
