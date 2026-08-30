@@ -118,6 +118,7 @@ const source = fs.readFileSync(new URL("../mobile-panel.js", import.meta.url), "
 const wrapper = fs.readFileSync(new URL("../ui-wrapper.js", import.meta.url), "utf8");
 const css = fs.readFileSync(new URL("../mobile-panel.css", import.meta.url), "utf8");
 const dockerfile = fs.readFileSync(new URL("../Dockerfile.mobile", import.meta.url), "utf8");
+const dockerignore = fs.readFileSync(new URL("../.dockerignore", import.meta.url), "utf8");
 const handoffServerPath = new URL("../handoff-server.sh", import.meta.url);
 const handoffServer = fs.readFileSync(handoffServerPath, "utf8");
 
@@ -137,6 +138,7 @@ assert.match(dockerfile, /ui-upstream\.js/);
 assert.match(dockerfile, /COPY ui-wrapper\.js \/opt\/noVNC\/app\/ui\.js/);
 assert.match(dockerfile, /add-pkg geckodriver=0\.36\.0-r0/);
 assert.match(dockerfile, /COPY handoff-server\.sh \/usr\/local\/bin\/private-login-handoff/);
+assert.match(dockerignore, /^!handoff-server\.sh$/m);
 assert.ok((fs.statSync(handoffServerPath).mode & 0o111) !== 0);
 assert.match(handoffServer, /\[ "\$\(id -u\)" -eq 1000 \]/);
 assert.match(handoffServer, /--connect-existing/);
