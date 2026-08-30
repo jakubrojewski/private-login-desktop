@@ -1,8 +1,11 @@
 FROM jlesage/firefox@sha256:3804ffd4a38837340c5103a43825ebaca979eb50fed44c2ff5310676b13ea32d
 
-RUN mv /opt/noVNC/app/ui.js /opt/noVNC/app/ui-upstream.js
+RUN add-pkg geckodriver=0.36.0-r0 && \
+    mv /opt/noVNC/app/ui.js /opt/noVNC/app/ui-upstream.js
 COPY ui-wrapper.js /opt/noVNC/app/ui.js
 COPY mobile-panel.js mobile-panel.css /opt/noVNC/app/
+COPY handoff-server.sh /usr/local/bin/private-login-handoff
+RUN chmod 0555 /usr/local/bin/private-login-handoff
 
 LABEL org.opencontainers.image.title="private-login-desktop-mobile" \
       org.opencontainers.image.source="https://github.com/jakubrojewski/private-login-desktop" \

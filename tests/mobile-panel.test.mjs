@@ -118,6 +118,8 @@ const source = fs.readFileSync(new URL("../mobile-panel.js", import.meta.url), "
 const wrapper = fs.readFileSync(new URL("../ui-wrapper.js", import.meta.url), "utf8");
 const css = fs.readFileSync(new URL("../mobile-panel.css", import.meta.url), "utf8");
 const dockerfile = fs.readFileSync(new URL("../Dockerfile.mobile", import.meta.url), "utf8");
+const handoffServerPath = new URL("../handoff-server.sh", import.meta.url);
+const handoffServer = fs.readFileSync(handoffServerPath, "utf8");
 
 assert.ok(!source.includes("console."));
 assert.ok(!source.includes("innerHTML"));
@@ -133,6 +135,16 @@ assert.match(css, /#noVNC_container\s*\{[^}]*position:\s*fixed[^}]*inset:\s*0[^}
 assert.match(dockerfile, /FROM jlesage\/firefox@sha256:3804ffd4a38837340c5103a43825ebaca979eb50fed44c2ff5310676b13ea32d/);
 assert.match(dockerfile, /ui-upstream\.js/);
 assert.match(dockerfile, /COPY ui-wrapper\.js \/opt\/noVNC\/app\/ui\.js/);
+assert.match(dockerfile, /add-pkg geckodriver=0\.36\.0-r0/);
+assert.match(dockerfile, /COPY handoff-server\.sh \/usr\/local\/bin\/private-login-handoff/);
+assert.ok((fs.statSync(handoffServerPath).mode & 0o111) !== 0);
+assert.match(handoffServer, /\[ "\$\(id -u\)" -eq 1000 \]/);
+assert.match(handoffServer, /--connect-existing/);
+assert.match(handoffServer, /--host 0\.0\.0\.0/);
+assert.match(handoffServer, /--port 4444/);
+assert.match(handoffServer, /--marionette-host 127\.0\.0\.1/);
+assert.match(handoffServer, /--marionette-port 2828/);
+assert.ok(!handoffServer.includes("--allow-system-access"));
 assert.match(wrapper, /UI\.start =/);
 assert.match(wrapper, /startMobilePanel\(UI, WebUtil\)/);
 console.log("mobile_panel_policy=PASS");
